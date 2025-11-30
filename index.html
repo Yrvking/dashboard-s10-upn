@@ -27,27 +27,12 @@
             backdrop-filter: blur(4px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        /* Toast Notification Animation */
-        @keyframes slideIn {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
-        }
-        .toast {
-            animation: slideIn 0.5s ease-out forwards;
-        }
-        .toast.hiding {
-            animation: fadeOut 0.5s ease-out forwards;
-        }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-200 font-sans p-6 min-h-screen relative">
+<body class="bg-slate-900 text-slate-200 font-sans p-6 min-h-screen">
 
     <!-- Header Enhanced with UPN Branding & User Context -->
-    <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-8 border-b border-slate-700 pb-6 gap-6">
+    <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 border-b border-slate-700 pb-6 gap-6">
         
         <!-- Brand & Context -->
         <div class="flex items-center gap-6">
@@ -69,14 +54,8 @@
         </div>
 
         <!-- User Info & High Level Stats -->
-        <div class="flex flex-col md:flex-row items-end md:items-center gap-6 w-full xl:w-auto">
+        <div class="flex flex-col md:flex-row items-end md:items-center gap-6 w-full lg:w-auto">
             
-            <!-- Share Action (New) -->
-            <button onclick="shareDashboard()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg border border-slate-600 transition-colors flex items-center gap-2 group shadow-lg">
-                <i class="fa-solid fa-share-nodes text-indigo-400 group-hover:text-indigo-300"></i>
-                <span class="text-sm font-semibold">Compartir</span>
-            </button>
-
             <!-- Integrantes / User Card -->
             <div class="glass-panel p-3 rounded-lg flex items-center gap-4 min-w-[300px]">
                 <div class="bg-slate-700 h-10 w-10 rounded-full flex items-center justify-center text-indigo-400">
@@ -348,51 +327,5 @@
 
         </div>
     </div>
-
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
-        <!-- Toasts will be injected here -->
-    </div>
-
-    <!-- Scripts -->
-    <script>
-        // Toast Notification System
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            // Colors based on type
-            const bgClass = type === 'success' ? 'bg-emerald-600' : 'bg-slate-700';
-            const icon = type === 'success' ? '<i class="fa-solid fa-check mr-2"></i>' : '<i class="fa-solid fa-info-circle mr-2"></i>';
-
-            toast.className = `${bgClass} text-white px-4 py-3 rounded shadow-xl flex items-center min-w-[300px] toast border border-white/10`;
-            toast.innerHTML = `${icon} <span class="font-medium text-sm">${message}</span>`;
-
-            container.appendChild(toast);
-
-            // Auto dismiss
-            setTimeout(() => {
-                toast.classList.add('hiding');
-                toast.addEventListener('animationend', () => {
-                    toast.remove();
-                });
-            }, 3000);
-        }
-
-        // Share Functionality (Simulated)
-        function shareDashboard() {
-            // In a real app, this would be window.location.href or a specific permalink
-            // Here we simulate a corporate SharePoint-like link
-            const dashboardUrl = "https://upn.sharepoint.com/sites/infra-group03/dashboards/s10-reliability-monitor";
-            
-            // Use Clipboard API
-            navigator.clipboard.writeText(dashboardUrl).then(() => {
-                showToast("Enlace del Dashboard copiado al portapapeles.");
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                showToast("Error al copiar enlace", "error");
-            });
-        }
-    </script>
 </body>
 </html>
