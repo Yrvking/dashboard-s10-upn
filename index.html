@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S10 ERP Reliability Dashboard - UPN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        .chart-bg {
+            background-image: linear-gradient(to right, #334155 1px, transparent 1px),
+                              linear-gradient(to bottom, #334155 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        /* Custom animations for live feel */
+        @keyframes pulse-dot {
+            0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(74, 222, 128, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+        }
+        .live-indicator {
+            animation: pulse-dot 2s infinite;
+        }
+        /* Glassmorphism for user card */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        /* Toast Notification Animation */
+        @keyframes slideIn {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        .toast {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        .toast.hiding {
+            animation: fadeOut 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 font-sans p-6 min-h-screen relative">
+
+    <!-- Header Enhanced with UPN Branding & User Context -->
+    <header class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-8 border-b border-slate-700 pb-6 gap-6">
+        
+        <!-- Brand & Context -->
+        <div class="flex items-center gap-6">
+            <!-- UPN Logo (Embedded Base64 SVG for reliability) -->
+            <div class="bg-white p-2 rounded-lg shadow-lg">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMDAgMTAwIiBmaWxsPSJub25lIj4KICA8IS0tIEFycm93IC0tPgogIDxwYXRoIGQ9Ik0zMCA3MCBWNDAgTDE1IDU1IEg1IEwzNSAxNSBMNjUgNTUgSDU1IEw0MCA0MCBWNzAgSDMwIFoiIGZpbGw9IiMwMDAwMDAiLz4KICA8IS0tIFRleHQgLS0+CiAgPHRleHQgeD0iODUiIHk9IjcwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc2l6ZT0iNjAiIGZpbGw9IiMwMDAwMDAiIGxldHRlci1zcGFjaW5nPSItMiI+VVBOPC90ZXh0PgogIDx0ZXh0IHg9Ijg4IiB5PSI5MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCIgZm9udC1zaXplPSIxMSIgZmlsbD0iIzAwMDAwMCIgbGV0dGVyLXNwYWNpbmc9IjAuNSI+VU5JVkVSU0lEQUQgUFJJVkFEQSBERUwgTk9SVEU8L3RleHQ+Cjwvc3ZnPg==" alt="UPN Logo" class="h-12 w-auto object-contain">
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-white tracking-wide flex items-center gap-3">
+                    <i class="fa-solid fa-server text-indigo-400"></i> 
+                    ERP S10 Reliability
+                </h1>
+                <p class="text-sm text-slate-400 mt-1 flex items-center gap-2">
+                    <span class="bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded text-xs border border-indigo-500/30">PROD</span>
+                    <span>|</span>
+                    <span>Grupo 03 - Infraestructura</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- User Info & High Level Stats -->
+        <div class="flex flex-col md:flex-row items-end md:items-center gap-6 w-full xl:w-auto">
+            
+            <!-- Share Action (New) -->
+            <button onclick="shareDashboard()" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg border border-slate-600 transition-colors flex items-center gap-2 group shadow-lg">
+                <i class="fa-solid fa-share-nodes text-indigo-400 group-hover:text-indigo-300"></i>
+                <span class="text-sm font-semibold">Compartir</span>
+            </button>
+
+            <!-- Integrantes / User Card -->
+            <div class="glass-panel p-3 rounded-lg flex items-center gap-4 min-w-[300px]">
+                <div class="bg-slate-700 h-10 w-10 rounded-full flex items-center justify-center text-indigo-400">
+                    <i class="fa-solid fa-users-gear text-lg"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Sesión Activa - Grupo 03</p>
+                    <div class="flex flex-col">
+                        <span class="text-xs text-white font-medium flex items-center gap-1">
+                            <i class="fa-solid fa-user text-[10px] text-emerald-400"></i> Gimena Jasmin Marquina Laguna
+                        </span>
+                        <span class="text-xs text-white font-medium flex items-center gap-1">
+                            <i class="fa-solid fa-user text-[10px] text-emerald-400"></i> Wilfredo Yrving Leon Chappe
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-10 w-px bg-slate-700 hidden md:block"></div>
+
+            <!-- Budget Stats -->
+            <div class="text-right">
+                <p class="text-xs text-slate-400 uppercase font-semibold">Error Budget Restante</p>
+                <div class="flex items-center justify-end gap-2">
+                    <p class="text-xl font-mono font-bold text-emerald-400">28.4 min</p>
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full live-indicator" title="Live System"></span>
+                </div>
+                <p class="text-[10px] text-slate-500">Total mensual: 43.2 min</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- SECTION 1: SLO SUMMARY (Traffic Lights) -->
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        
+        <!-- Card 1: Availability -->
+        <div class="bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg hover:bg-slate-750 transition-colors">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 class="text-xs text-slate-400 uppercase font-bold tracking-wider">Disponibilidad ERP</h3>
+                    <p class="text-xs text-slate-500 mt-1">Target: 99.9%</p>
+                </div>
+                <i class="fa-solid fa-check-circle text-emerald-500"></i>
+            </div>
+            <div class="mt-4">
+                <span class="text-2xl font-bold text-white">99.94%</span>
+                <span class="text-xs text-emerald-400 ml-1"><i class="fa-solid fa-arrow-up"></i></span>
+            </div>
+            <div class="w-full bg-slate-700 h-1 mt-3 rounded-full overflow-hidden">
+                <div class="bg-emerald-500 h-1 rounded-full" style="width: 99.94%"></div>
+            </div>
+        </div>
+
+        <!-- Card 2: Latency P95 -->
+        <div class="bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg hover:bg-slate-750 transition-colors">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 class="text-xs text-slate-400 uppercase font-bold tracking-wider">Latencia P95</h3>
+                    <p class="text-xs text-slate-500 mt-1">Target: 500ms</p>
+                </div>
+                <i class="fa-solid fa-stopwatch text-emerald-500"></i>
+            </div>
+            <div class="mt-4">
+                <span class="text-2xl font-bold text-white">324 ms</span>
+                <span class="text-xs text-slate-400 ml-1">avg</span>
+            </div>
+            <!-- Sparkline simulation -->
+            <div class="flex items-end h-4 mt-2 gap-1 opacity-50">
+                <div class="w-1 bg-emerald-500 h-2"></div>
+                <div class="w-1 bg-emerald-500 h-3"></div>
+                <div class="w-1 bg-emerald-500 h-2"></div>
+                <div class="w-1 bg-emerald-500 h-4"></div>
+                <div class="w-1 bg-emerald-500 h-3"></div>
+            </div>
+        </div>
+
+        <!-- Card 3: Integration Errors -->
+        <div class="bg-slate-800 rounded-lg p-4 border-l-4 border-yellow-500 shadow-lg relative overflow-hidden hover:bg-slate-750 transition-colors">
+            <div class="absolute top-0 right-0 w-16 h-16 bg-yellow-500/10 rounded-bl-full"></div>
+            <div class="flex justify-between items-start relative z-10">
+                <div>
+                    <h3 class="text-xs text-slate-400 uppercase font-bold tracking-wider">Integraciones (Err)</h3>
+                    <p class="text-xs text-slate-500 mt-1">Target: < 1%</p>
+                </div>
+                <i class="fa-solid fa-triangle-exclamation text-yellow-500"></i>
+            </div>
+            <div class="mt-4 relative z-10">
+                <span class="text-2xl font-bold text-yellow-400">0.92%</span>
+                <span class="text-xs text-yellow-500 ml-1">Warning</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">API Facturación inestable</p>
+        </div>
+
+        <!-- Card 4: Semantic Freshness -->
+        <div class="bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg hover:bg-slate-750 transition-colors">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 class="text-xs text-slate-400 uppercase font-bold tracking-wider">Data Freshness</h3>
+                    <p class="text-xs text-slate-500 mt-1">Target: < 15 min</p>
+                </div>
+                <i class="fa-solid fa-database text-emerald-500"></i>
+            </div>
+            <div class="mt-4">
+                <span class="text-2xl font-bold text-white">8 min</span>
+                <span class="text-xs text-slate-400 ml-1">lag</span>
+            </div>
+            <div class="text-xs text-emerald-400 mt-2"><i class="fa-solid fa-check"></i> Sync OK</div>
+        </div>
+
+        <!-- Card 5: ETL Success -->
+        <div class="bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg hover:bg-slate-750 transition-colors">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 class="text-xs text-slate-400 uppercase font-bold tracking-wider">ETL Jobs</h3>
+                    <p class="text-xs text-slate-500 mt-1">Target: 99.5%</p>
+                </div>
+                <i class="fa-solid fa-network-wired text-emerald-500"></i>
+            </div>
+            <div class="mt-4">
+                <span class="text-2xl font-bold text-white">99.8%</span>
+            </div>
+            <div class="text-xs text-slate-500 mt-2">142/142 Jobs completados</div>
+        </div>
+    </section>
+
+    <!-- SECTION 2 & 3: DETAILS (Grid) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Columna Izquierda (2/3): Performance & Business -->
+        <div class="lg:col-span-2 flex flex-col gap-6">
+            
+            <!-- LATENCY CHART -->
+            <div class="bg-slate-800 rounded-lg p-6 shadow-lg border border-slate-700">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-white">Latencia Transaccional (P95) vs Umbral</h2>
+                    <div class="flex gap-2">
+                        <span class="text-xs px-2 py-1 bg-red-500/20 text-red-400 rounded border border-red-500/30">SLO Breach Area</span>
+                        <span class="text-xs px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded border border-emerald-500/30">Normal Op</span>
+                    </div>
+                </div>
+                
+                <!-- Mock Chart Area -->
+                <div class="relative h-64 w-full chart-bg rounded border border-slate-600 overflow-hidden">
+                    <!-- SLO Line (500ms) -->
+                    <div class="absolute top-1/3 w-full h-px bg-red-500 border-t border-dashed border-red-400 z-10 flex items-center">
+                        <span class="text-xs text-red-400 bg-slate-800 px-1 ml-2">SLO Limit (500ms)</span>
+                    </div>
+
+                    <!-- Graph Line (SVG) -->
+                    <svg class="absolute inset-0 h-full w-full z-20" preserveAspectRatio="none">
+                        <!-- Path simulates latency: low, then a spike, then recovery -->
+                        <path d="M0,200 Q50,190 100,210 T200,180 T300,100 T400,120 T500,190 T600,200 T700,210 T800,200" 
+                              fill="none" stroke="#34d399" stroke-width="2" />
+                        <!-- Fill below line -->
+                        <path d="M0,200 Q50,190 100,210 T200,180 T300,100 T400,120 T500,190 T600,200 T700,210 T800,200 V300 H0 Z" 
+                              fill="url(#gradient)" opacity="0.2" />
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" style="stop-color:#34d399;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#34d399;stop-opacity:0" />
+                            </linearGradient>
+                        </defs>
+                        <!-- Annotation for the spike -->
+                        <circle cx="300" cy="100" r="4" fill="#f87171" stroke="white" stroke-width="2" />
+                    </svg>
+                    
+                    <!-- Tooltip simulation -->
+                    <div class="absolute top-[80px] left-[280px] bg-slate-700 p-2 rounded text-xs border border-slate-500 shadow-xl z-30">
+                        <p class="font-bold">14:30 PM</p>
+                        <p class="text-red-400">Latencia: 680ms</p>
+                        <p class="text-slate-400">Impact: High Load</p>
+                    </div>
+                </div>
+                <div class="flex justify-between text-xs text-slate-500 mt-2 font-mono">
+                    <span>08:00</span>
+                    <span>12:00</span>
+                    <span>16:00</span>
+                    <span>20:00</span>
+                </div>
+            </div>
+
+            <!-- BUSINESS IMPACT -->
+            <div class="bg-slate-800 rounded-lg p-6 shadow-lg border border-slate-700">
+                <h2 class="text-lg font-bold text-white mb-4">Volumen de Negocio (Transacciones/Min)</h2>
+                <div class="flex items-end gap-2 h-32 w-full px-4">
+                    <!-- Bars -->
+                    <div class="w-1/12 bg-indigo-500 rounded-t h-[40%] hover:bg-indigo-400 transition-all" title="09:00"></div>
+                    <div class="w-1/12 bg-indigo-500 rounded-t h-[60%] hover:bg-indigo-400 transition-all"></div>
+                    <div class="w-1/12 bg-indigo-500 rounded-t h-[80%] hover:bg-indigo-400 transition-all"></div>
+                    <div class="w-1/12 bg-indigo-500 rounded-t h-[90%] hover:bg-indigo-400 transition-all"></div>
+                    <div class="w-1/12 bg-indigo-500 rounded-t h-[45%] hover:bg-indigo-400 transition-all"></div> <!-- Dip due to latency -->
+                    <div class="w-1/12 bg-indigo-500 rounded-t h-[85%] hover:bg-indigo-400 transition-all"></div>
+                    <div class="w-1/12 bg-indigo-500 rounded-t h-[70%] hover:bg-indigo-400 transition-all"></div>
+                    <div class="w-1/12 bg-indigo-500 rounded-t h-[60%] hover:bg-indigo-400 transition-all"></div>
+                    <div class="w-1/12 bg-indigo-500 rounded-t h-[50%] hover:bg-indigo-400 transition-all"></div>
+                    <div class="w-1/12 bg-indigo-500 rounded-t h-[30%] hover:bg-indigo-400 transition-all"></div>
+                    <div class="w-1/12 bg-indigo-500 rounded-t h-[20%] hover:bg-indigo-400 transition-all"></div>
+                    <div class="w-1/12 bg-indigo-500 rounded-t h-[10%] hover:bg-indigo-400 transition-all"></div>
+                </div>
+                <div class="text-xs text-slate-400 text-center mt-2">
+                    Correlación: Caída de transacciones a las 14:00 coincide con pico de latencia.
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Columna Derecha (1/3): Integrations & Alerts -->
+        <div class="flex flex-col gap-6">
+            
+            <!-- Integration Health -->
+            <div class="bg-slate-800 rounded-lg p-6 shadow-lg border border-slate-700">
+                <h2 class="text-lg font-bold text-white mb-4">Salud de Integraciones</h2>
+                <div class="space-y-4">
+                    <!-- Item 1 -->
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">API Bancos</span>
+                            <span class="text-emerald-400">99.9% OK</span>
+                        </div>
+                        <div class="w-full bg-slate-700 h-2 rounded-full">
+                            <div class="bg-emerald-500 h-2 rounded-full" style="width: 99%"></div>
+                        </div>
+                    </div>
+                    <!-- Item 2 -->
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">Facturación Elec.</span>
+                            <span class="text-yellow-400">98.5% OK</span>
+                        </div>
+                        <div class="w-full bg-slate-700 h-2 rounded-full">
+                            <div class="bg-yellow-500 h-2 rounded-full" style="width: 98.5%"></div>
+                        </div>
+                    </div>
+                    <!-- Item 3 -->
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">Data Warehouse Sync</span>
+                            <span class="text-emerald-400">100% OK</span>
+                        </div>
+                        <div class="w-full bg-slate-700 h-2 rounded-full">
+                            <div class="bg-emerald-500 h-2 rounded-full" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Alerts -->
+            <div class="bg-slate-800 rounded-lg p-6 shadow-lg border border-slate-700 flex-grow">
+                <h2 class="text-lg font-bold text-white mb-4">Alertas Activas</h2>
+                <div class="space-y-3">
+                    <div class="p-3 bg-red-500/10 border-l-2 border-red-500 rounded-r flex items-start gap-3">
+                        <i class="fa-solid fa-fire text-red-500 mt-1"></i>
+                        <div>
+                            <h4 class="text-sm font-bold text-red-200">High Latency Warn</h4>
+                            <p class="text-xs text-red-300">P95 > 500ms por 15min. Budget burn rate elevado.</p>
+                            <span class="text-[10px] text-slate-400">Hace 2 horas</span>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-blue-500/10 border-l-2 border-blue-500 rounded-r flex items-start gap-3">
+                        <i class="fa-solid fa-info-circle text-blue-500 mt-1"></i>
+                        <div>
+                            <h4 class="text-sm font-bold text-blue-200">ETL Job Retry</h4>
+                            <p class="text-xs text-blue-300">Job "Sales_Daily" reintentado automáticamente.</p>
+                            <span class="text-[10px] text-slate-400">Hace 5 horas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+        <!-- Toasts will be injected here -->
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Toast Notification System
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            // Colors based on type
+            const bgClass = type === 'success' ? 'bg-emerald-600' : 'bg-slate-700';
+            const icon = type === 'success' ? '<i class="fa-solid fa-check mr-2"></i>' : '<i class="fa-solid fa-info-circle mr-2"></i>';
+
+            toast.className = `${bgClass} text-white px-4 py-3 rounded shadow-xl flex items-center min-w-[300px] toast border border-white/10`;
+            toast.innerHTML = `${icon} <span class="font-medium text-sm">${message}</span>`;
+
+            container.appendChild(toast);
+
+            // Auto dismiss
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                toast.addEventListener('animationend', () => {
+                    toast.remove();
+                });
+            }, 3000);
+        }
+
+        // Share Functionality (Simulated)
+        function shareDashboard() {
+            // In a real app, this would be window.location.href or a specific permalink
+            // Here we simulate a corporate SharePoint-like link
+            const dashboardUrl = "https://upn.sharepoint.com/sites/infra-group03/dashboards/s10-reliability-monitor";
+            
+            // Use Clipboard API
+            navigator.clipboard.writeText(dashboardUrl).then(() => {
+                showToast("Enlace del Dashboard copiado al portapapeles.");
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                showToast("Error al copiar enlace", "error");
+            });
+        }
+    </script>
+</body>
+</html>
